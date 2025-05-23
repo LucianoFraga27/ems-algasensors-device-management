@@ -83,6 +83,27 @@ public class SensorController {
         sensorRepository.delete(sensorExistente);
     }
 
+    @PutMapping("{sensorId}/enable")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void enable (@PathVariable TSID sensorId) {
+        var sensorExistente = sensorRepository.findById(new SensorId(sensorId)).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        sensorExistente.enable();
+        sensorRepository.saveAndFlush(sensorExistente);
+    }
+
+
+    @DeleteMapping("{sensorId}/enable")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void disable (@PathVariable TSID sensorId) {
+        var sensorExistente = sensorRepository.findById(new SensorId(sensorId)).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        sensorExistente.disable();
+        sensorRepository.saveAndFlush(sensorExistente);
+    }
+
 
     private SensorOutput convertToModelOutput(Sensor sensor) {
         return SensorOutput.builder()
