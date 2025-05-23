@@ -25,18 +25,35 @@ public class SensorController {
     private final SensorRepository sensorRepository;
 
     @GetMapping
-    public Page<SensorOutput> search (@PageableDefault(size = 5, page = 0) Pageable pageable) {
+    public Page<SensorOutput> search(@PageableDefault(size = 5, page = 0) Pageable pageable) {
         var sensors = sensorRepository.findAll(pageable);
         return sensors.map(this::convertToModelOutput);
     }
 
-
     @GetMapping("{sensorId}")
-    public SensorOutput getOne (@PathVariable TSID sensorId) {
+    public SensorOutput get (@PathVariable TSID sensorId) {
         var sensor = sensorRepository.findById(new SensorId(sensorId)).orElseThrow(
-                ()-> new ResponseStatusException(HttpStatus.NOT_FOUND)
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
         );
         return convertToModelOutput(sensor);
+    }
+
+    @PutMapping("{sensorId}")
+    public SensorOutput edit(@PathVariable TSID sensorId, @RequestBody SensorInput input) {
+        var sensorExistente = sensorRepository.findById(new SensorId(sensorId)).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        var sensorEditado = Sensor.builder()
+                .id(sensorExistente.getId())
+                .name(input.getName())
+                .ip(input.getIp())
+                .protocol(input.getProtocol())
+                .location(input.getLocation())
+                .model(input.getModel())
+                .enabled(false)
+                .build();
+        sensorEditado = sensorRepository.saveAndFlush(sensorEditado);
+        return convertToModelOutput(sensorEditado);
     }
 
     @PostMapping
@@ -56,6 +73,16 @@ public class SensorController {
 
         return convertToModelOutput(sensor);
     }
+
+    @DeleteMapping("{sensorId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete (@PathVariable TSID sensorId) {
+        var sensorExistente = sensorRepository.findById(new SensorId(sensorId)).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        sensorRepository.delete(sensorExistente);
+    }
+
 
     private SensorOutput convertToModelOutput(Sensor sensor) {
         return SensorOutput.builder()
