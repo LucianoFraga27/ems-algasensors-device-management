@@ -19,6 +19,7 @@ public class RestClientFactory {
 
     @Bean
     public RestClient temperatureMonitoringRestClient () {
+        //        return RestClient.create("http://localhost:8082"); Não carrega os modulos do JACKSON
         return builder.baseUrl("http://localhost:8082")
                 .requestFactory(generateClientHttpRequestFactory())
                 .defaultStatusHandler(HttpStatusCode::isError, (request, response) -> {

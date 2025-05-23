@@ -3,6 +3,7 @@ package com.algaworks.algasensors.device.management.api.client.impl;
 import com.algaworks.algasensors.device.management.api.client.RestClientFactory;
 import com.algaworks.algasensors.device.management.api.client.SensorMonitoringClient;
 import com.algaworks.algasensors.device.management.api.client.exception.SensorMonitoringClientBadGatewayException;
+import com.algaworks.algasensors.device.management.api.model.SensorMonitoringOutput;
 import io.hypersistence.tsid.TSID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
@@ -37,5 +38,13 @@ public class SensorMonitoringRestImpl implements SensorMonitoringClient {
                 .uri("/api/sensors/{sensorId}/monitoring/enable", sensorId)
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    @Override
+    public SensorMonitoringOutput getDetail(TSID sensorId) {
+        return restClient.get()
+                .uri("/api/sensors/{sensorId}/monitoring", sensorId)
+                .retrieve()
+                .body(SensorMonitoringOutput.class);
     }
 }
