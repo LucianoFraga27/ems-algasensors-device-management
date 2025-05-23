@@ -8,9 +8,14 @@ import com.algaworks.algasensors.device.management.domain.model.SensorId;
 import com.algaworks.algasensors.device.management.domain.repository.SensorRepository;
 import io.hypersistence.tsid.TSID;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
 
 @RestController
 @RequestMapping("/api/sensors")
@@ -18,6 +23,13 @@ import org.springframework.web.server.ResponseStatusException;
 public class SensorController {
 
     private final SensorRepository sensorRepository;
+
+    @GetMapping
+    public Page<SensorOutput> search (@PageableDefault(size = 5, page = 0) Pageable pageable) {
+        var sensors = sensorRepository.findAll(pageable);
+        return sensors.map(this::convertToModelOutput);
+    }
+
 
     @GetMapping("{sensorId}")
     public SensorOutput getOne (@PathVariable TSID sensorId) {
@@ -37,6 +49,7 @@ public class SensorController {
                 .protocol(input.getProtocol())
                 .location(input.getLocation())
                 .model(input.getModel())
+                .enabled(false)
                 .build();
 
         sensor = sensorRepository.saveAndFlush(sensor);
@@ -44,7 +57,7 @@ public class SensorController {
         return convertToModelOutput(sensor);
     }
 
-    private static SensorOutput convertToModelOutput(Sensor sensor) {
+    private SensorOutput convertToModelOutput(Sensor sensor) {
         return SensorOutput.builder()
                 .id(sensor.getId().getValue())
                 .name(sensor.getName())
